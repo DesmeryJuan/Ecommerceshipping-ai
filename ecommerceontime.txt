@@ -1,0 +1,62 @@
+It is the target variable, where 1 Indicates that the product has NOT reached on time and 0 indicates it has reached
+
+base=read.csv("ecommerceontime.csv")
+str(base)
+nuevabase <- base[sample(nrow(base), 6000), ]
+base=nuevabase
+str(base)
+base$ID=NULL
+base$Warehouse_block=as.factor(Warehouse_block)
+base$Warehouse_block=as.factor(base$Warehouse_block)
+base$Mode_of_Shipment=as.factor(base$Mode_of_Shipment)
+base$Product_importance=as.factor(base$Product_importance)
+base$Gender=as.factor(base$Gender)
+str(base)
+library(caret)
+library(rpart)
+set.seed(123);particion=createDataPartition(base$Reached.on.Time_Y.N,p=0.8,list=F)
+entreno=base[particion,]
+testeo=base[-particion,]
+arbol=rpart(Reached.on.Time_Y.N~.,entreno,method="class")
+library(rpart.plot)
+rpart.plot(arbol,extra=1,type=5)
+pred=predict(arbol,testeo,type="class")
+confusionMatrix(pred,testeo$Reached.on.Time_Y.N)
+pred <- factor(pred, levels = c(0, 1))
+testeo$Reached.on.Time_Y.N <- factor(testeo$Reached.on.Time_Y.N, levels = c(0, 1))
+confusionMatrix(pred,testeo$Reached.on.Time_Y.N)
+
+Confusion Matrix and Statistics
+
+          Reference
+Prediction   0   1
+         0 452 359
+         1  25 364
+                                          
+               Accuracy : 0.68            
+                 95% CI : (0.6528, 0.7063)
+    No Information Rate : 0.6025          
+    P-Value [Acc > NIR] : 1.621e-08       
+                                          
+                  Kappa : 0.403           
+                                          
+ Mcnemar's Test P-Value : < 2.2e-16       
+                                          
+            Sensitivity : 0.9476          
+            Specificity : 0.5035          
+         Pos Pred Value : 0.5573          
+         Neg Pred Value : 0.9357          
+             Prevalence : 0.3975          
+         Detection Rate : 0.3767          
+   Detection Prevalence : 0.6758          
+      Balanced Accuracy : 0.7255          
+                                          
+       'Positive' Class : 0               
+                                     
+rpart.plot(arbol,extra=1,type=5)
+arbolGrande=rpart(Reached.on.Time_Y.N~.,entreno,method="class",minsplit=0,cp=0)
+rpart.plot(arbolGrande,type=5,extra=1)
+x11();plotcp(arbolGrande)
+podado3=prune(arbolGrande,sizeoftree=7)
+podado3=prune(arbolGrande,cp=0.0033)
+rpart.plot(podado3,type=5,extra=1)
